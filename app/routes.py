@@ -1,0 +1,7 @@
+API = '/api'
+AUTH = '/auth'
+HEALTH = '/health/'
+LOGIN = API + AUTH + '/login/'
+LOGOUT = API + AUTH + '/logout/'
+USERS = API + '/users/'
+MESSAGES = API + '/messages/'
