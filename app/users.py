@@ -1,6 +1,6 @@
 import sys
 from asyncio import new_event_loop
-from fastapi import FastAPI, Request, HTTPException, status
+from fastapi import FastAPI, Request, HTTPException, APIRouter, status
 from pydantic import ValidationError
 from uvicorn import run
 from app import routes
@@ -12,9 +12,11 @@ from logger.logger import Logger
 
 users_logger = Logger('users_endpoint')
 app = FastAPI()
+router = APIRouter(prefix=routes.USERS, tags=['users'])
 db_service = DBService()
 
 
+@router.post(path='/', status_code=status.HTTP_201_CREATED)
 @app.post(path=routes.USERS, status_code=status.HTTP_201_CREATED)
 async def create_user(request: Request):
     users_logger.info('Create user.')
@@ -41,21 +43,25 @@ async def create_user(request: Request):
     return {'user_id': user_id}
 
 
+@router.get(path='/', status_code=status.HTTP_200_OK)
 @app.get(path=routes.USERS, status_code=status.HTTP_200_OK)
 async def get_user():
     return {}
 
 
+@router.put(path='/', status_code=status.HTTP_200_OK)
 @app.put(path=routes.USERS, status_code=status.HTTP_200_OK)
 async def update_user():
     return {}
 
 
+@router.delete(path='/', status_code=status.HTTP_200_OK)
 @app.delete(path=routes.USERS, status_code=status.HTTP_200_OK)
 async def create_user():
     return
 
 
+@router.head(path='/', status_code=status.HTTP_200_OK)
 @app.head(path=routes.USERS_HEALTH, status_code=status.HTTP_200_OK)
 async def health():
     return
@@ -64,8 +70,8 @@ async def health():
 if __name__ == '__main__':
 
     try:
-        run(app=app, host=settings.HOST, port=settings.PORT)
         users_logger.info('"Users" endpoint is started.')
+        run(app=app, host=settings.HOST, port=settings.PORT)
 
     except KeyboardInterrupt:
         loop = new_event_loop()
