@@ -1,11 +1,11 @@
 """
-This is a handler for RabbitMQ instance in docker container.
+This is a async handler for RabbitMQ instance in docker container.
 """
 import json
 import asyncio
 import aio_pika
 from aio_pika import Exchange, Queue, Message
-import settings
+from databases import settings
 
 
 class RabbitMQHandler:

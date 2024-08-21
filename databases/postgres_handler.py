@@ -1,7 +1,7 @@
 import typing
 import asyncio
 import asyncpg
-from async_server.database import settings
+from databases import settings
 
 
 class PostgresHandler:
