@@ -8,6 +8,7 @@ from databases.postgres_handler import PostgresHandler
 from databases.sqlite_handler import SQLiteHandler
 from logger.logger import Logger
 
+
 service_logger = Logger('db_service')
 
 
@@ -31,6 +32,10 @@ class DBService:
         await self.ram_db_handler.create_all_tables()
         await self.hdd_db_handler.create_all_tables()
         service_logger.info('Databases are prepared to work.')
+
+    async def establish_db_connection(self):
+        await self.connect_to_databases()
+        await self.prepare_databases_data()
 
     @staticmethod
     def convert_tuple_to_user(user_tuple: tuple):

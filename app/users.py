@@ -15,23 +15,10 @@ app = FastAPI()
 db_service = DBService()
 
 
-async def establish_db_connection():
-    users_logger.debug('Connecting to databases.')
-    await db_service.connect_to_databases()
-    await db_service.prepare_databases_data()
-    users_logger.debug('Connection is established.')
-
-
-async def close_db_async_connection():
-    users_logger.debug('Closing async connections with databases.')
-    await db_service.close_all_connections()
-    users_logger.debug('Connections are closed.')
-
-
 @app.post(path=routes.USERS, status_code=status.HTTP_201_CREATED)
 async def create_user(request: Request):
     users_logger.info('Create user.')
-    await establish_db_connection()
+    await db_service.establish_db_connection()
 
     try:
         request_json = await request.json()
@@ -82,6 +69,6 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         loop = new_event_loop()
-        loop.run_until_complete(close_db_async_connection())
+        loop.run_until_complete(db_service.close_all_connections())
         users_logger.info('"Users" endpoint is stopped.')
         sys.exit(0)
