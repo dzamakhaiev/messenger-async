@@ -1,12 +1,13 @@
 API = '/api'
-
 AUTH = '/auth'
-LOGIN = API + AUTH + '/login/'
-LOGOUT = API + AUTH + '/logout/'
-AUTH_HEALTH = API + AUTH + '/health/'
+HEALTH = '/health/'
 
-USERS = API + '/users/'
-USERS_HEALTH = API + USERS + '/health/'
+LOGIN = API + AUTH + '/login'
+LOGOUT = API + AUTH + '/logout'
+AUTH_HEALTH = API + AUTH + HEALTH
 
-MESSAGES = API + '/messages/'
-MESSAGES_HEALTH = API + MESSAGES + '/health/'
+USERS = API + '/users'
+USERS_HEALTH = API + USERS + HEALTH
+
+MESSAGES = API + '/messages'
+MESSAGES_HEALTH = API + MESSAGES + HEALTH
