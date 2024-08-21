@@ -7,6 +7,7 @@ from app import routes
 from app import settings
 from models.users_models import User
 from services.db_service import DBService
+from services.auth_service import AuthService
 from logger.logger import Logger
 
 
@@ -14,6 +15,7 @@ users_logger = Logger('users_endpoint')
 app = FastAPI()
 router = APIRouter(prefix=routes.USERS, tags=['users'])
 db_service = DBService()
+auth_service = AuthService()
 
 
 @router.post(path='/', status_code=status.HTTP_201_CREATED)
@@ -38,6 +40,8 @@ async def create_user(request: Request):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail=settings.USER_EXISTS_ERROR)
 
+    # Encrypt user password and store user in database
+    user.password = auth_service.hash_password(user.password)
     user_id = await db_service.create_user(user)
     users_logger.info(f'User "{user.username}" created with id {user_id}')
     return {'user_id': user_id}
