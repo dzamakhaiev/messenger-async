@@ -1,6 +1,6 @@
 API = '/api'
 AUTH = '/auth'
-HEALTH = '/health/'
+HEALTH = '/health'
 
 LOGIN = API + AUTH + '/login'
 LOGOUT = API + AUTH + '/logout'
