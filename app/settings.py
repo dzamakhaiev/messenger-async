@@ -1,5 +1,10 @@
 HOST = '0.0.0.0'
 PORT = 5000
+USER_EXISTS_ERROR = 'Username already exists.'
+VALIDATION_ERROR = 'Validation error.'
+NOT_AUTHORIZED = 'Not authorized.'
+INVALID_TOKEN = 'Invalid token.'
+SUCCESSFUL = 'Operation successful.'
 TOKEN_EXP_MINUTES = 60
 MQ_EXCHANGE_NAME = 'EXCHANGE'
 MQ_MSG_QUEUE_NAME = 'MSG_QUEUE'
