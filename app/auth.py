@@ -1,7 +1,8 @@
 import sys
 from asyncio import new_event_loop
 from pydantic import ValidationError
-from fastapi import FastAPI, Request, HTTPException, APIRouter, status
+from fastapi import FastAPI, Request, HTTPException, APIRouter, Depends, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from uvicorn import run
 from app import routes
 from app import settings
@@ -13,9 +14,12 @@ from logger.logger import Logger
 
 auth_logger = Logger('auth_endpoint')
 app = FastAPI()
+security = HTTPBearer()
+
 login_router = APIRouter(prefix=routes.LOGIN, tags=['auth'])
 logout_router = APIRouter(prefix=routes.LOGOUT, tags=['auth'])
 auth_health_router = APIRouter(prefix=routes.AUTH_HEALTH, tags=['auth'])
+
 db_service = DBService()
 auth_service = AuthService()
 
@@ -47,8 +51,12 @@ async def login(request: Request):
                             detail=settings.INCORRECT_CREDS)
 
     elif db_user and (act_hashed_password == db_user.password):
+
         auth_logger.debug('Passwords are matching.')
         token = auth_service.create_token(username=user.username, user_id=db_user.id)
+        auth_logger.info('User logged in.')
+        await db_service.store_user_token(user_id=db_user.id, token=token)
+
         return {'msg': settings.LOGIN_SUCCESSFUL, 'user_id': db_user.id, 'token': token}
 
     else:
@@ -60,8 +68,31 @@ async def login(request: Request):
 
 @logout_router.post(path='/', status_code=status.HTTP_200_OK)
 @app.post(path=routes.LOGOUT, status_code=status.HTTP_200_OK)
-async def logout():
-    return
+async def logout(request: Request, token: HTTPAuthorizationCredentials = Depends(security)):
+    auth_logger.info('User log out.')
+    user_id, token_username, _ = auth_service.check_token(token.credentials)
+    auth_logger.debug(f'Token payload: {(user_id, token_username)}')
+    await db_service.establish_db_connection()
+
+    try:
+        request_json = await request.json()
+        auth_logger.debug(f'Request body: {request_json}')
+        username = request_json['username']
+
+    except KeyError as e:
+        auth_logger.error(f'Logout validation caused error: {e}')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=settings.VALIDATION_ERROR)
+
+    if token_username == username:
+        await db_service.delete_user_token(user_id=user_id)
+        auth_logger.info('User logged out.')
+        return {'msg': settings.LOGOUT_SUCCESSFUL, 'username': username}
+
+    else:
+        auth_logger.error(f'Username from token mismatches username from request.')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=settings.VALIDATION_ERROR)
 
 
 @auth_health_router.head(path='/', status_code=status.HTTP_200_OK)
