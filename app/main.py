@@ -12,7 +12,10 @@ from logger.logger import Logger
 main_logger = Logger('main_endpoint')
 app = FastAPI()
 app.include_router(router=users.router)
-app.include_router(router=auth.router)
+app.include_router(router=auth.login_router)
+app.include_router(router=auth.logout_router)
+app.include_router(router=auth.auth_health_router)
+
 db_service = DBService()
 
 
