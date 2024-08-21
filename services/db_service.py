@@ -38,14 +38,14 @@ class DBService:
         await self.prepare_databases_data()
 
     @staticmethod
-    def convert_tuple_to_user(user_tuple: tuple):
+    def convert_tuple_to_user(user_tuple: tuple) -> UserDB:
         service_logger.debug(f'Convert user tuple to UserDB object: {user_tuple}')
         user_id, username = user_tuple
         user = UserDB(id=user_id, username=username, phone_number='', password='')
         return user
 
     @staticmethod
-    def convert_record_to_user(user_record):
+    def convert_record_to_user(user_record) -> UserDB:
         service_logger.debug(f'Convert user record to UserDB object: {user_record}')
         user = UserDB(id=user_record.get('id'),
                       username=user_record.get('username'),
@@ -108,7 +108,7 @@ class DBService:
         await self.hdd_db_handler.insert_user_public_key(user_id, public_key)
         await self.ram_db_handler.insert_user_public_key(user_id, public_key)
 
-    async def get_user(self, user_id: int = None, username: str = None) -> User | None:
+    async def get_user(self, user_id: int = None, username: str = None) -> UserDB | None:
         service_logger.info(f'Get user by "{user_id}" or "{username}".')
         if user_id:
 
