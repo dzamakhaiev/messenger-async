@@ -1,5 +1,6 @@
 import sys
-from fastapi import FastAPI, Request, HTTPException, BackgroundTasks, status
+from asyncio import new_event_loop
+from fastapi import FastAPI, Request, HTTPException, status
 from pydantic import ValidationError
 from uvicorn import run
 from app import routes
@@ -28,10 +29,9 @@ async def close_db_async_connection():
 
 
 @app.post(path=routes.USERS, status_code=status.HTTP_201_CREATED)
-async def create_user(request: Request, background_tasks: BackgroundTasks):
+async def create_user(request: Request):
     users_logger.info('Create user.')
     await establish_db_connection()
-    background_tasks.add_task(close_db_async_connection)
 
     try:
         request_json = await request.json()
@@ -78,5 +78,10 @@ if __name__ == '__main__':
 
     try:
         run(app=app, host=settings.HOST, port=settings.PORT)
+        users_logger.info('"Users" endpoint is started.')
+
     except KeyboardInterrupt:
+        loop = new_event_loop()
+        loop.run_until_complete(close_db_async_connection())
+        users_logger.info('"Users" endpoint is stopped.')
         sys.exit(0)
