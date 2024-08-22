@@ -91,13 +91,14 @@ class DBService:
         service_logger.info('New user is created.')
         return user_db.id
 
-    async def store_message_to_db(self, msg_json):
+    async def store_message_to_db(self, msg_json: dict):
         service_logger.info('Store message in database.')
         service_logger.debug(msg_json)
         await self.hdd_db_handler.insert_message(msg_json.get('sender_id'),
                                                  msg_json.get('receiver_id'),
                                                  msg_json.get('sender_username'),
-                                                 msg_json.get('message'))
+                                                 msg_json.get('message'),
+                                                 msg_json.get('send_date'))
 
     async def store_user_address(self, user_id, user_address):
         service_logger.info('Store user user addresses in HDD and RAM DBs.')

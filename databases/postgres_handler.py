@@ -73,7 +73,7 @@ class PostgresHandler:
             user_receiver_id INTEGER NOT NULL,
             sender_username TEXT NOT NULL,
             message TEXT NOT NULL,
-            receive_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            send_date TEXT NOT NULL,
             FOREIGN KEY (user_sender_id) REFERENCES users (id),
             FOREIGN KEY (user_receiver_id) REFERENCES users (id))
             ''')
@@ -176,12 +176,13 @@ class PostgresHandler:
                 'INSERT INTO public_keys (user_id, public_key) VALUES ($1, $2)',
                 (user_id, public_key))
 
-    async def insert_message(self, sender_id: int, receiver_id: int, sender_username, message):
+    async def insert_message(self, sender_id: int, receiver_id: int, sender_username: str,
+                             message: str, send_date: str):
         await self.execute_query(
             'INSERT INTO messages '
-            '(user_sender_id, user_receiver_id, sender_username, message) '
-            'VALUES ($1, $2, $3, $4)',
-            (sender_id, receiver_id, sender_username, message))
+            '(user_sender_id, user_receiver_id, sender_username, message, send_date) '
+            'VALUES ($1, $2, $3, $4, $5)',
+            (sender_id, receiver_id, sender_username, message, send_date))
 
     async def insert_messages(self, messages):
         await self.execute_query(
