@@ -70,6 +70,14 @@ class DBService:
         else:
             return token_db.get('token')
 
+    @staticmethod
+    def convert_address_list(address_list: list) -> list:
+        service_logger.debug(f'Convert tuple or record to list of strings: {address_list}')
+        if isinstance(address_list[0], tuple):
+            return [address[0] for address in address_list]
+        else:
+            return [address.get('user_address') for address in address_list]
+
     async def create_user(self, user: User):
         service_logger.info('Create new user in databases.')
         service_logger.debug(user)
@@ -163,6 +171,7 @@ class DBService:
             service_logger.debug(f'Address list from HDD database: {address_list}')
 
         if address_list:
+            address_list = self.convert_address_list(address_list)
             return address_list
         return []
 

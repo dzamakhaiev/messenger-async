@@ -68,7 +68,7 @@ class SQLiteHandler:
             CREATE TABLE IF NOT EXISTS user_address
             (user_id INTEGER NOT NULL,
             user_address TEXT NOT NULL,
-            PRIMARY KEY (user_id, user_address)
+            PRIMARY KEY (user_id, user_address))
             ''')
 
     async def create_tokens_table(self):
