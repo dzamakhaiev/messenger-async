@@ -20,11 +20,11 @@ class MQService:
             # Create exchange, queues and store them inside handler
             exchange = await self.mq_handler.create_exchange(settings.MQ_EXCHANGE_NAME)
 
-            msg_queue = await self.mq_handler.create_and_bind_queue(
+            msg_queue, _ = await self.mq_handler.create_and_bind_queue(
                 exchange_name=settings.MQ_EXCHANGE_NAME,
                 queue_name=settings.MQ_MSG_QUEUE_NAME)
 
-            login_queue = await self.mq_handler.create_and_bind_queue(
+            login_queue, _ = await self.mq_handler.create_and_bind_queue(
                 exchange_name=settings.MQ_EXCHANGE_NAME,
                 queue_name=settings.MQ_LOGIN_QUEUE_NAME)
 
@@ -34,20 +34,20 @@ class MQService:
 
     async def establish_db_connection(self):
         service_logger.info('Establish connection and prepare RabbitMQ.')
-        await self.prepare_database()
         await self.connect()
+        await self.prepare_database()
 
     async def put_to_message_queue(self, msg_json: dict):
         service_logger.debug(f'Put message to queue: {msg_json}')
-        await self.mq_handler.send_message(self.mq_handler.exchange,
-                                           self.mq_handler.msg_queue,
-                                           msg_json)
+        await self.mq_handler.send_message(exchange=self.mq_handler.exchange,
+                                           queue=self.mq_handler.msg_queue,
+                                           body=msg_json)
 
     async def put_to_login_queue(self, login_json: dict):
         service_logger.debug(f'Put login message to queue: {login_json}')
-        await self.mq_handler.send_message(self.mq_handler.exchange,
-                                           self.mq_handler.login_queue,
-                                           login_json)
+        await self.mq_handler.send_message(exchange=self.mq_handler.exchange,
+                                           queue=self.mq_handler.login_queue,
+                                           body=login_json)
 
     async def connect(self):
         service_logger.info('Connect to RabbitMQ.')
