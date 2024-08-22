@@ -59,9 +59,12 @@ async def login(request: Request):
         token = auth_service.create_token(username=user.username, user_id=db_user.id)
         auth_logger.info('User logged in.')
 
+        # Store user data to RAN and HDD databases
+        await db_service.store_user_address(user_id=db_user.id, user_address=user.user_address)
         await db_service.store_user_public_key(user_id=db_user.id, public_key=user.public_key)
         await db_service.store_user_token(user_id=db_user.id, token=token)
         await mq_service.put_to_login_queue({'user_id': db_user.id, 'user_address': user.user_address})
+
         return {'msg': settings.LOGIN_SUCCESSFUL, 'user_id': db_user.id, 'token': token}
 
     else:
