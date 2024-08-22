@@ -43,6 +43,7 @@ class AuthService:
         try:
             token_info = jwt.decode(token, key=settings.SECRET_KEY, algorithms=['HS256'])
             service_logger.info('Token decoded.')
+            service_logger.debug(f'Token payload: {token_info}')
 
             user_id = token_info.get('user_id')
             username = token_info.get('username')

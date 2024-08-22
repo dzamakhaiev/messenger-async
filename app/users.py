@@ -1,6 +1,7 @@
 import sys
 from asyncio import new_event_loop
-from fastapi import FastAPI, Request, HTTPException, APIRouter, status
+from fastapi import FastAPI, Request, HTTPException, APIRouter, Depends, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import ValidationError
 from uvicorn import run
 from app import routes
@@ -14,6 +15,7 @@ from logger.logger import Logger
 users_logger = Logger('users_endpoint')
 app = FastAPI()
 router = APIRouter(prefix=routes.USERS, tags=['users'])
+security = HTTPBearer()
 db_service = DBService()
 auth_service = AuthService()
 
@@ -49,8 +51,26 @@ async def create_user(request: Request):
 
 @router.get(path='/', status_code=status.HTTP_200_OK)
 @app.get(path=routes.USERS, status_code=status.HTTP_200_OK)
-async def get_user():
-    return {}
+async def get_user(request: Request, token: HTTPAuthorizationCredentials = Depends(security)):
+    users_logger.info('Get user.')
+    user_id, token_username, _ = auth_service.check_token(token.credentials)
+    await db_service.establish_db_connection()
+
+    if username := request.query_params.get('username'):
+
+        if user_db := await db_service.get_user(username=username):
+            public_key = await db_service.get_user_public_key(user_db.id)
+            users_logger.info('User found.')
+            return {'user_id': user_db.id, 'public_key': public_key}
+
+        else:
+            users_logger.error(f'User "{username}" not found.')
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=settings.USER_NOT_FOUND)
+    else:
+        users_logger.error('"username" field is missing in get request.')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=settings.VALIDATION_ERROR)
 
 
 @router.put(path='/', status_code=status.HTTP_200_OK)
@@ -61,7 +81,7 @@ async def update_user():
 
 @router.delete(path='/', status_code=status.HTTP_200_OK)
 @app.delete(path=routes.USERS, status_code=status.HTTP_200_OK)
-async def create_user():
+async def delete_user():
     return
 
 

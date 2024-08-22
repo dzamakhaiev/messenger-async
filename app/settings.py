@@ -1,6 +1,7 @@
 HOST = '0.0.0.0'
 PORT = 5000
 USER_EXISTS_ERROR = 'Username already exists.'
+USER_NOT_FOUND = 'User not found.'
 VALIDATION_ERROR = 'Validation error.'
 NOT_AUTHORIZED = 'Not authorized.'
 EXPIRED_TOKEN = 'Token expired.'
