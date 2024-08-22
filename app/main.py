@@ -2,6 +2,7 @@ import sys
 from asyncio import new_event_loop
 from fastapi import FastAPI
 from uvicorn import run
+from app import messages
 from app import users
 from app import auth
 from app import settings
@@ -12,6 +13,7 @@ main_logger = Logger('main_endpoint')
 app = FastAPI()
 
 app.include_router(router=users.router)
+app.include_router(router=messages.router)
 app.include_router(router=auth.login_router)
 app.include_router(router=auth.logout_router)
 app.include_router(router=auth.auth_health_router)
@@ -25,8 +27,11 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         loop = new_event_loop()
+        loop.run_until_complete(messages.db_service.close_all_connections())
+        loop.run_until_complete(messages.mq_service.close())
         loop.run_until_complete(users.db_service.close_all_connections())
         loop.run_until_complete(auth.db_service.close_all_connections())
+        loop.run_until_complete(auth.mq_service.close())
 
         main_logger.info('"Main" endpoint is stopped.')
         sys.exit(0)
