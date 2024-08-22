@@ -93,6 +93,7 @@ class DBService:
 
     async def store_user_address(self, user_id, user_address):
         service_logger.info('Store user user addresses in HDD and RAM DBs.')
+        service_logger.debug(f'User user: {user_address}')
         await self.hdd_db_handler.insert_address(user_address)
         await self.ram_db_handler.insert_user_address(user_id, user_address)
         await self.hdd_db_handler.insert_user_address(user_id, user_address)
@@ -155,10 +156,11 @@ class DBService:
     async def get_user_address(self, user_id: int) -> List:
         service_logger.info(f'Get user address for user id "{user_id}".')
         address_list = await self.ram_db_handler.get_user_address(user_id)
+        service_logger.debug(f'Address list from RAM database: {address_list}')
+
         if not address_list:
             address_list = await self.hdd_db_handler.get_user_address(user_id)
-
-        service_logger.debug(f'Address list: {address_list}')
+            service_logger.debug(f'Address list from HDD database: {address_list}')
 
         if address_list:
             return address_list

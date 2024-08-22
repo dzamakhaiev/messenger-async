@@ -1,6 +1,10 @@
 import typing
 import asyncio
 import aiosqlite
+from logger.logger import Logger
+
+
+sqlite_logger = Logger('sqlite_handler')
 
 
 class SQLiteHandler:
@@ -14,28 +18,42 @@ class SQLiteHandler:
         self.cursor = await self.connection.cursor()
 
     async def execute_query(self, query, args, fetch_all=False):
+        sqlite_logger.debug(f'Execute query: {query}\n'
+                            f'with args: {args}\n'
+                            f'fetch all: {fetch_all}')
+
         try:
             result = await self.cursor.execute(query, args)
+            sqlite_logger.debug('Query executed.')
+
             if result.rowcount and fetch_all:
                 return await result.fetchall()
             else:
                 return await result.fetchone()
 
         except aiosqlite.DatabaseError as e:
+            sqlite_logger.error(e)
             await self.connection.rollback()
 
     async def execute_query_with_commit(self, query, args=None, many=False):
         if args is None:
             args = []
 
+        sqlite_logger.debug(f'Execute query: {query}\n'
+                            f'with args: {args}\n'
+                            f'many: {many}')
+
         try:
             if many:
                 await self.cursor.executemany(query, args)
             else:
                 await self.cursor.execute(query, args)
+
+            sqlite_logger.debug('Query executed.')
             await self.connection.commit()
 
         except aiosqlite.DatabaseError as e:
+            sqlite_logger.error(e)
             await self.connection.rollback()
 
     async def create_usernames_table(self):

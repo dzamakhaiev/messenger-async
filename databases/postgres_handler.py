@@ -1,7 +1,12 @@
-import typing
 import asyncio
+import typing
+
 import asyncpg
+
 from databases import settings
+from logger.logger import Logger
+
+postgres_logger = Logger('postgres_handler')
 
 
 class PostgresHandler:
@@ -18,23 +23,37 @@ class PostgresHandler:
     async def execute_query(self, query, args=None, many=False):
         if args is None:
             args = []
+
+        postgres_logger.debug(f'Execute query: {query}\n'
+                              f'with args: {args}\n'
+                              f'many: {many}')
+
         try:
             if many:
                 await self.connection.executemany(query, args)
             else:
                 await self.connection.execute(query, *args)
-        except asyncpg.exceptions.UniqueViolationError:
-            pass
+            postgres_logger.debug('Query executed.')
+
+        except asyncpg.exceptions.UniqueViolationError as e:
+            postgres_logger.error(e)
 
     async def execute_fetch(self, query, args=None, fetch_all=False):
         if args is None:
             args = []
 
+        postgres_logger.debug(f'Execute query: {query}\n'
+                              f'with args: {args}\n'
+                              f'fetch all: {fetch_all}')
+
         if fetch_all:
             result = await self.connection.fetch(query, *args)
+            postgres_logger.debug('Query executed.')
             return result
+
         else:
             result = await self.connection.fetchrow(query, *args)
+            postgres_logger.debug('Query executed.')
             return result
 
     async def create_users_table(self):
