@@ -1,3 +1,4 @@
+import typing
 import asyncio
 import aiosqlite
 
@@ -106,9 +107,9 @@ class SQLiteHandler:
 
         return result
 
-    async def get_user_address(self, user_id: int):
+    async def get_user_address(self, user_id: int) -> typing.List[typing.Tuple]:
         result = await self.execute_query(
-            'SELECT user_address FROM user_address WHERE user_id = ?', (user_id,))
+            'SELECT user_address FROM user_address WHERE user_id = ?', (user_id,), fetch_all=True)
         return result
 
     async def get_user_token(self, user_id: int):

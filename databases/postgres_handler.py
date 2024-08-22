@@ -113,9 +113,9 @@ class PostgresHandler:
 
         return result
 
-    async def get_user_address(self, user_id: int) -> asyncpg.Record | None:
+    async def get_user_address(self, user_id: int) -> typing.List[asyncpg.Record] | None:
         result = await self.execute_fetch(
-            'SELECT user_address FROM user_address WHERE user_id = $1', (user_id,))
+            'SELECT user_address FROM user_address WHERE user_id = $1', (user_id,), fetch_all=True)
         return result
 
     async def get_user_messages(self, receiver_id: int) -> typing.List[asyncpg.Record]:

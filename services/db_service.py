@@ -3,6 +3,7 @@ This module contains class Srvice that provide logical layer
 between listener, sender services and databases handlers.
 """
 import asyncio
+from typing import List
 from models.users_models import User, UserDB
 from databases.postgres_handler import PostgresHandler
 from databases.sqlite_handler import SQLiteHandler
@@ -151,14 +152,17 @@ class DBService:
             service_logger.error(f'User not found by username "{username}".')
             return None
 
-    async def get_user_address(self, user_id: int):
+    async def get_user_address(self, user_id: int) -> List:
         service_logger.info(f'Get user address for user id "{user_id}".')
         address_list = await self.ram_db_handler.get_user_address(user_id)
         if not address_list:
             address_list = await self.hdd_db_handler.get_user_address(user_id)
 
         service_logger.debug(f'Address list: {address_list}')
-        return address_list
+
+        if address_list:
+            return address_list
+        return []
 
     async def get_user_token(self, user_id: int):
         service_logger.info(f'Get user token for user id "{user_id}".')
