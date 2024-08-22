@@ -55,8 +55,9 @@ async def login(request: Request):
         auth_logger.debug('Passwords are matching.')
         token = auth_service.create_token(username=user.username, user_id=db_user.id)
         auth_logger.info('User logged in.')
-        await db_service.store_user_token(user_id=db_user.id, token=token)
 
+        await db_service.store_user_public_key(user_id=db_user.id, public_key=user.public_key)
+        await db_service.store_user_token(user_id=db_user.id, token=token)
         return {'msg': settings.LOGIN_SUCCESSFUL, 'user_id': db_user.id, 'token': token}
 
     else:
@@ -71,7 +72,6 @@ async def login(request: Request):
 async def logout(request: Request, token: HTTPAuthorizationCredentials = Depends(security)):
     auth_logger.info('User log out.')
     user_id, token_username, _ = auth_service.check_token(token.credentials)
-    auth_logger.debug(f'Token payload: {(user_id, token_username)}')
     await db_service.establish_db_connection()
 
     try:
