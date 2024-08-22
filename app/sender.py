@@ -1,7 +1,15 @@
+import os
 import sys
 import json
 import asyncio
 from aio_pika.abc import AbstractIncomingMessage
+
+current_file = os.path.realpath(__file__)
+current_dir = os.path.dirname(current_file)
+repo_dir = os.path.abspath(os.path.join(current_dir, '..'))
+sys.path.insert(0, repo_dir)
+
+
 from services.db_service import DBService
 from services.mq_service import MQService
 from services.sender_service import SenderService
