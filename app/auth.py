@@ -114,5 +114,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         loop = new_event_loop()
         loop.run_until_complete(db_service.close_all_connections())
+        loop.run_until_complete(mq_service.close())
         auth_logger.info('"Auth" endpoint is stopped.')
         sys.exit(0)
