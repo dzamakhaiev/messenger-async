@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 
 class Message(BaseModel):
-    id: Optional[int]
+    id: Optional[int] = None
     sender_id: int
     receiver_id: int
     sender_username: str
