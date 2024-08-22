@@ -1,4 +1,5 @@
 import socket
+from datetime import datetime
 from urllib.parse import urlparse
 from httpx import AsyncClient, ConnectError, TimeoutException
 from logger.logger import Logger
@@ -53,8 +54,11 @@ class SenderService:
 
         for message in messages:
             msg_id, sender_id, receiver_id, sender_username, msg, msg_date = message
+            if isinstance(msg_date, datetime):
+                msg_date = msg_date.strftime(settings.DATETIME_FORMAT)
+
             msg_json = {'message': msg, 'sender_id': sender_id, 'sender_username': sender_username,
-                        'receiver_id': receiver_id, 'send_date': msg_date.strftime(settings.DATETIME_FORMAT)}
+                        'receiver_id': receiver_id, 'send_date': msg_date}
             msg_received = await self.send_message_by_list(address_list, msg_json)
 
             if msg_received:
