@@ -29,6 +29,10 @@ class MQService:
             await self.mq_handler.store_exchange_and_queues(exchange, msg_queue, login_queue)
             self.prepared = True
 
+    async def establish_db_connection(self):
+        await self.prepare_database()
+        await self.connect()
+
     async def put_to_message_queue(self, msg_json: dict):
         await self.mq_handler.send_message(self.mq_handler.exchange,
                                            self.mq_handler.msg_queue,

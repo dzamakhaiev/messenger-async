@@ -8,6 +8,7 @@ from app import routes
 from app import settings
 from models.auth_models import UserLogin
 from services.db_service import DBService
+from services.mq_service import MQService
 from services.auth_service import AuthService
 from logger.logger import Logger
 
@@ -21,6 +22,7 @@ logout_router = APIRouter(prefix=routes.LOGOUT, tags=['auth'])
 auth_health_router = APIRouter(prefix=routes.AUTH_HEALTH, tags=['auth'])
 
 db_service = DBService()
+mq_service = MQService()
 auth_service = AuthService()
 
 
@@ -29,6 +31,7 @@ auth_service = AuthService()
 async def login(request: Request):
     auth_logger.info('User log in.')
     await db_service.establish_db_connection()
+    await mq_service.establish_db_connection()
 
     try:
         request_json = await request.json()
@@ -58,6 +61,7 @@ async def login(request: Request):
 
         await db_service.store_user_public_key(user_id=db_user.id, public_key=user.public_key)
         await db_service.store_user_token(user_id=db_user.id, token=token)
+        await mq_service.put_to_login_queue({'user_id': db_user.id, 'user_address': user.user_address})
         return {'msg': settings.LOGIN_SUCCESSFUL, 'user_id': db_user.id, 'token': token}
 
     else:
