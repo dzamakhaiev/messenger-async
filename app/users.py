@@ -81,8 +81,21 @@ async def update_user():
 
 @router.delete(path='/', status_code=status.HTTP_200_OK)
 @app.delete(path=routes.USERS, status_code=status.HTTP_200_OK)
-async def delete_user():
-    return
+async def delete_user(request: Request):
+    users_logger.info('Delete user.')
+    await db_service.establish_db_connection()
+    request_json = await request.json()
+
+    if user_id := request_json.get('user_id'):
+        user_id = int(user_id)
+        await db_service.delete_user(user_id=user_id)
+        users_logger.info(settings.USER_DELETED)
+        return {'details': settings.USER_DELETED}
+
+    else:
+        users_logger.error('"user_id" field is missing in put request.')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=settings.VALIDATION_ERROR)
 
 
 @router.head(path='/', status_code=status.HTTP_200_OK)
