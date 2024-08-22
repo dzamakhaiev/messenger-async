@@ -15,6 +15,8 @@ class MQService:
 
     async def prepare_database(self):
         if not self.prepared:
+            service_logger.info('Create exchange and queues.')
+
             # Create exchange, queues and store them inside handler
             exchange = await self.mq_handler.create_exchange(settings.MQ_EXCHANGE_NAME)
 
@@ -28,25 +30,31 @@ class MQService:
 
             await self.mq_handler.store_exchange_and_queues(exchange, msg_queue, login_queue)
             self.prepared = True
+            service_logger.info('Exchange and queues created.')
 
     async def establish_db_connection(self):
+        service_logger.info('Establish connection and prepare RabbitMQ.')
         await self.prepare_database()
         await self.connect()
 
     async def put_to_message_queue(self, msg_json: dict):
+        service_logger.debug(f'Put message to queue: {msg_json}')
         await self.mq_handler.send_message(self.mq_handler.exchange,
                                            self.mq_handler.msg_queue,
                                            msg_json)
 
     async def put_to_login_queue(self, login_json: dict):
+        service_logger.debug(f'Put login message to queue: {login_json}')
         await self.mq_handler.send_message(self.mq_handler.exchange,
                                            self.mq_handler.login_queue,
                                            login_json)
 
     async def connect(self):
+        service_logger.info('Connect to RabbitMQ.')
         await self.mq_handler.connect()
 
     async def close(self):
+        service_logger.info('Close connection with RabbitMQ.')
         await self.mq_handler.close()
 
 
