@@ -7,11 +7,14 @@ service_logger = Logger('mq_service')
 
 
 class MQService:
-
     prepared = False
 
     def __init__(self):
         self.mq_handler = RabbitMQHandler()
+
+    async def connect(self):
+        service_logger.info('Connect to RabbitMQ.')
+        await self.mq_handler.connect()
 
     async def prepare_database(self):
         if not self.prepared:
@@ -45,10 +48,6 @@ class MQService:
         service_logger.debug(f'Put login message to queue: {login_json}')
         await self.mq_handler.publish_message_login_queue(body=login_json)
 
-    async def connect(self):
-        service_logger.info('Connect to RabbitMQ.')
-        await self.mq_handler.connect()
-
     async def close(self):
         await self.mq_handler.close()
 
@@ -60,5 +59,6 @@ if __name__ == '__main__':
         await service.connect()
         await service.prepare_database()
         await service.close()
+
 
     asyncio.run(main())
