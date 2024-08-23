@@ -104,7 +104,6 @@ services:
       - logs:/messenger-async/logs
     command: sh -c "sleep 10 && uvicorn app.messages:app --host 0.0.0.0 --port 5000 --workers 2"
 
-
   sender:
     container_name: sender
     build:
