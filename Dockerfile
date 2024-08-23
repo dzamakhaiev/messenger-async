@@ -3,7 +3,7 @@ EXPOSE 5000
 
 ENV TZ=Europe/Athens
 ENV RUN_INSIDE_DOCKER=1
-ENV PATH=$PATH:/messenger
+ENV PATH=$PATH:/messenger-async
 
 RUN apk update
 RUN apk upgrade
