@@ -14,7 +14,7 @@ services:
     networks:
       - backend-prod
     volumes:
-      - rabbitmq:/var/lib/rabbitmq
+      - rabbitmq-prod:/var/lib/rabbitmq
 
   postgres:
     container_name: postgres
@@ -31,7 +31,7 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - postgres-prod:/var/lib/postgresql/data
 
   users:
     container_name: users
@@ -142,6 +142,6 @@ networks:
   backend-prod:
 
 volumes:
-  logs:
-  postgres:
-  rabbitmq:
+  logs-prod:
+  postgres-prod:
+  rabbitmq-prod:
