@@ -1,8 +1,7 @@
-import asyncio
+import sys
 import typing
-
+import asyncio
 import asyncpg
-
 from databases import settings
 from logger.logger import Logger
 
@@ -15,10 +14,15 @@ class PostgresHandler:
         self.connection = None
 
     async def connect(self):
-        self.connection = await asyncpg.connect(
-            database=settings.DB_NAME, user=settings.DB_USER,
-            port=settings.DB_PORT, host=settings.DB_HOST,
-            password=settings.DB_PASSWORD)
+        try:
+            self.connection = await asyncpg.connect(
+                database=settings.DB_NAME, user=settings.DB_USER,
+                port=settings.DB_PORT, host=settings.DB_HOST,
+                password=settings.DB_PASSWORD)
+
+        except (asyncpg.ConnectionFailureError, ConnectionRefusedError) as e:
+            postgres_logger.error(e)
+            sys.exit(1)
 
     async def execute_query(self, query, args=None, many=False):
         if args is None:
