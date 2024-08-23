@@ -2,7 +2,7 @@ version: "3"
 services:
 
   rabbitmq:
-    container_name: rabbitmq
+    container_name: rabbitmq-async
     image: "rabbitmq:alpine"
     restart: on-failure
     deploy:
@@ -12,12 +12,12 @@ services:
         max_attempts: 3
         window: 60s
     networks:
-      - backend-prod
+      - backend-async-prod
     volumes:
       - rabbitmq-prod:/var/lib/rabbitmq
 
   postgres:
-    container_name: postgres
+    container_name: postgres-async
     image: "postgres:alpine"
     restart: on-failure
     deploy:
@@ -27,14 +27,14 @@ services:
         max_attempts: 3
         window: 60s
     networks:
-      - backend-prod
+      - backend-async-prod
     environment:
       POSTGRES_PASSWORD: postgres
     volumes:
       - postgres-prod:/var/lib/postgresql/data
 
   users:
-    container_name: users
+    container_name: users-async
     image: "dzamakhaiev/messenger-async"
     restart: on-failure
     deploy:
@@ -47,7 +47,7 @@ services:
       - rabbitmq
       - postgres
     networks:
-      - backend-prod
+      - backend-async-prod
     environment:
       SERVICE_NAME: users
     volumes:
@@ -55,7 +55,7 @@ services:
     command: sh -c "sleep 10 && uvicorn app.users:app --host 0.0.0.0 --port 5000 --workers 4"
 
   auth:
-    container_name: auth
+    container_name: auth-async
     image: "dzamakhaiev/messenger-async"
     restart: on-failure
     deploy:
@@ -68,7 +68,7 @@ services:
       - rabbitmq
       - postgres
     networks:
-      - backend-prod
+      - backend-async-prod
     environment:
       SERVICE_NAME: auth
     volumes:
@@ -76,7 +76,7 @@ services:
     command: sh -c "sleep 10 && uvicorn app.auth:app --host 0.0.0.0 --port 5000 --workers 4"
 
   messages:
-    container_name: messages
+    container_name: messages-async
     image: "dzamakhaiev/messenger-async"
     restart: on-failure
     deploy:
@@ -89,7 +89,7 @@ services:
       - rabbitmq
       - postgres
     networks:
-      - backend-prod
+      - backend-async-prod
     environment:
       SERVICE_NAME: messages
     volumes:
@@ -97,7 +97,7 @@ services:
     command: sh -c "sleep 10 && uvicorn app.messages:app --host 0.0.0.0 --port 5000 --workers 4"
 
   sender:
-    container_name: sender
+    container_name: sender-async
     image: "dzamakhaiev/messenger-async"
     restart: on-failure
     deploy:
@@ -110,7 +110,7 @@ services:
       - rabbitmq
       - postgres
     networks:
-      - backend-prod
+      - backend-async-prod
     environment:
       SERVICE_NAME: sender
     volumes:
@@ -118,7 +118,7 @@ services:
     command: sh -c "sleep 10 && python ./app/sender.py"
 
   nginx:
-    container_name: nginx
+    container_name: nginx-async
     image: "dzamakhaiev/messenger-nginx-async"
     restart: on-failure
     deploy:
@@ -134,12 +134,12 @@ services:
     ports:
       - "5005:5000"
     networks:
-      - backend-prod
+      - backend-async-prod
     command: sh -c "sleep 20 && nginx -g 'daemon off;'"
 
 
 networks:
-  backend-prod:
+  backend-async-prod:
 
 volumes:
   logs-prod:
