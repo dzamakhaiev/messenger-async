@@ -132,7 +132,7 @@ services:
       - users
       - messages
     ports:
-      - "5000:5000"
+      - "5005:5000"
     networks:
       - backend-prod
     command: sh -c "sleep 20 && nginx -g 'daemon off;'"
