@@ -2,7 +2,7 @@ FROM python:3-alpine
 EXPOSE 5000
 
 ENV TZ=Europe/Athens
-ENV RUN_INSIDE_DOCKER 1
+ENV RUN_INSIDE_DOCKER=1
 ENV PATH=$PATH:/messenger
 
 RUN apk update
