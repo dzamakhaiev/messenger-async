@@ -8,7 +8,6 @@ import sys
 import aio_pika
 from aio_pika import Exchange, Queue, Message, AMQPException
 from databases import settings
-from utils import docker_handler
 from logger.logger import Logger
 
 
@@ -23,12 +22,6 @@ class RabbitMQHandler:
         self.exchange = None
         self.msg_queue = None
         self.login_queue = None
-
-        docker = docker_handler.docker_is_running()
-        container = docker_handler.container_is_running(settings.MQ_CONTAINER_NAME)
-        if not docker or not container:
-            mq_logger.error('Docker or container is not running.')
-            sys.exit(1)
 
     async def connect(self):
         mq_logger.info('Connect to RabbitMQ.')

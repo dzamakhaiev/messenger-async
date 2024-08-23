@@ -3,7 +3,6 @@ import typing
 import asyncio
 import asyncpg
 from databases import settings
-from utils import docker_handler
 from logger.logger import Logger
 
 postgres_logger = Logger('postgres_handler')
@@ -13,12 +12,6 @@ class PostgresHandler:
 
     def __init__(self):
         self.connection = None
-
-        docker = docker_handler.docker_is_running()
-        container = docker_handler.container_is_running(settings.PG_CONTAINER_NAME)
-        if not docker or not container:
-            postgres_logger.error('Docker or container is not running.')
-            sys.exit(1)
 
     async def connect(self):
         try:
