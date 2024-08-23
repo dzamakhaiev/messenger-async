@@ -61,17 +61,24 @@ class RabbitMQHandler:
         bind = await queue.bind(exchange_name)
         return queue, bind
 
-    @staticmethod
-    async def send_message(exchange: Exchange, queue: Queue, body: (str, dict)):
-        """
-        """
-        mq_logger.info(f'Publish message in "{queue.name}" queue.')
+    async def send_message(self, exchange: Exchange, queue: Queue, body: (str, dict)):
+        mq_logger.debug(f'Exchange: {exchange.name}')
+        mq_logger.debug(f'Queue: {queue.name}')
         mq_logger.debug(f'Message: {body}')
 
         if isinstance(body, dict):
             body = json.dumps(body)
+
         message = Message(body=body.encode(), delivery_mode=settings.MQ_DELIVERY_MODE)
         await exchange.publish(routing_key=queue.name, message=message)
+
+    async def publish_message_msg_queue(self, body: (str, dict)):
+        mq_logger.info(f'Publish message in "{self.msg_queue.name}" queue.')
+        await self.send_message(exchange=self.exchange, queue=self.msg_queue, body=body)
+
+    async def publish_message_login_queue(self, body: (str, dict)):
+        mq_logger.info(f'Publish message in "{self.login_queue.name}" queue.')
+        await self.send_message(exchange=self.exchange, queue=self.login_queue, body=body)
 
     @staticmethod
     async def receive_message(queue: Queue):

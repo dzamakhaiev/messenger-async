@@ -39,22 +39,17 @@ class MQService:
 
     async def put_to_message_queue(self, msg_json: dict):
         service_logger.debug(f'Put message to queue: {msg_json}')
-        await self.mq_handler.send_message(exchange=self.mq_handler.exchange,
-                                           queue=self.mq_handler.msg_queue,
-                                           body=msg_json)
+        await self.mq_handler.publish_message_msg_queue(body=msg_json)
 
     async def put_to_login_queue(self, login_json: dict):
         service_logger.debug(f'Put login message to queue: {login_json}')
-        await self.mq_handler.send_message(exchange=self.mq_handler.exchange,
-                                           queue=self.mq_handler.login_queue,
-                                           body=login_json)
+        await self.mq_handler.publish_message_login_queue(body=login_json)
 
     async def connect(self):
         service_logger.info('Connect to RabbitMQ.')
         await self.mq_handler.connect()
 
     async def close(self):
-        service_logger.info('Close connection with RabbitMQ.')
         await self.mq_handler.close()
 
 
