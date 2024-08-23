@@ -1,5 +1,5 @@
 """
-This is a async handler for RabbitMQ instance in docker container.
+This is an async handler for RabbitMQ instance in docker container.
 """
 import json
 import asyncio
