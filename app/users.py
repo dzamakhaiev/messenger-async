@@ -24,7 +24,7 @@ auth_service = AuthService()
 @app.post(path=routes.USERS, status_code=status.HTTP_201_CREATED)
 async def create_user(request: Request):
     users_logger.info('Create user.')
-    await db_service.establish_db_connection()
+    await db_service.connect_to_databases()
 
     try:
         request_json = await request.json()
@@ -54,7 +54,7 @@ async def create_user(request: Request):
 async def get_user(request: Request, token: HTTPAuthorizationCredentials = Depends(security)):
     users_logger.info('Get user.')
     user_id, token_username, _ = auth_service.check_token(token.credentials)
-    await db_service.establish_db_connection()
+    await db_service.connect_to_databases()
 
     if username := request.query_params.get('username'):
 
@@ -83,7 +83,7 @@ async def update_user():
 @app.delete(path=routes.USERS, status_code=status.HTTP_200_OK)
 async def delete_user(request: Request):
     users_logger.info('Delete user.')
-    await db_service.establish_db_connection()
+    await db_service.connect_to_databases()
     request_json = await request.json()
 
     if user_id := request_json.get('user_id'):
@@ -105,13 +105,21 @@ async def health():
 
 
 if __name__ == '__main__':
+    loop = new_event_loop()
+    exit_code = 0
 
     try:
+        loop.run_until_complete(db_service.establish_db_connection())
         users_logger.info('"Users" endpoint is started.')
         run(app=app, host=settings.HOST, port=settings.PORT)
 
     except KeyboardInterrupt:
-        loop = new_event_loop()
-        loop.run_until_complete(db_service.close_all_connections())
         users_logger.info('"Users" endpoint is stopped.')
-        sys.exit(0)
+
+    except Exception as e:
+        users_logger.error(e)
+        exit_code = 1
+
+    finally:
+        loop.run_until_complete(db_service.close_all_connections())
+        sys.exit(exit_code)

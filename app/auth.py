@@ -30,8 +30,8 @@ auth_service = AuthService()
 @app.post(path=routes.LOGIN, status_code=status.HTTP_200_OK)
 async def login(request: Request):
     auth_logger.info('User log in.')
-    await db_service.establish_db_connection()
-    await mq_service.establish_db_connection()
+    await db_service.connect_to_databases()
+    await mq_service.connect()
 
     try:
         request_json = await request.json()
@@ -79,7 +79,7 @@ async def login(request: Request):
 async def logout(request: Request, token: HTTPAuthorizationCredentials = Depends(security)):
     auth_logger.info('User log out.')
     user_id, token_username, _ = auth_service.check_token(token.credentials)
-    await db_service.establish_db_connection()
+    await db_service.connect_to_databases()
 
     try:
         request_json = await request.json()
@@ -109,14 +109,23 @@ async def health():
 
 
 if __name__ == '__main__':
+    loop = new_event_loop()
+    exit_code = 0
 
     try:
+        loop.run_until_complete(db_service.establish_db_connection())
+        loop.run_until_complete(mq_service.establish_db_connection())
         auth_logger.info('"Auth" endpoint is started.')
         run(app=app, host=settings.HOST, port=settings.PORT)
 
     except KeyboardInterrupt:
-        loop = new_event_loop()
+        auth_logger.info('"Auth" endpoint is stopped.')
+
+    except Exception as e:
+        auth_logger.error(e)
+        exit_code = 1
+
+    finally:
         loop.run_until_complete(db_service.close_all_connections())
         loop.run_until_complete(mq_service.close())
-        auth_logger.info('"Auth" endpoint is stopped.')
-        sys.exit(0)
+        sys.exit(exit_code)
