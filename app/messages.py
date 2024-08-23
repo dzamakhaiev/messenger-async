@@ -22,6 +22,10 @@ db_service = DBService()
 mq_service = MQService()
 auth_service = AuthService()
 
+loop = new_event_loop()
+loop.run_until_complete(db_service.establish_db_connection())
+loop.run_until_complete(mq_service.establish_db_connection())
+
 
 @router.post(path='/', status_code=status.HTTP_200_OK)
 @app.post(path=routes.MESSAGES, status_code=status.HTTP_200_OK)
@@ -68,12 +72,9 @@ async def health():
 
 
 if __name__ == '__main__':
-    loop = new_event_loop()
     exit_code = 0
 
     try:
-        loop.run_until_complete(db_service.establish_db_connection())
-        loop.run_until_complete(mq_service.establish_db_connection())
         messages_logger.info('"Messages" endpoint is started.')
         run(app=app, host=settings.HOST, port=settings.PORT)
 

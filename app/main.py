@@ -20,18 +20,24 @@ app.include_router(router=auth.auth_health_router)
 
 
 if __name__ == '__main__':
+    exit_code = 0
 
     try:
         main_logger.info('"Main" endpoint is started.')
         run(app=app, host=settings.HOST, port=settings.PORT)
 
     except KeyboardInterrupt:
-        loop = new_event_loop()
-        loop.run_until_complete(messages.db_service.close_all_connections())
-        loop.run_until_complete(messages.mq_service.close())
-        loop.run_until_complete(users.db_service.close_all_connections())
-        loop.run_until_complete(auth.db_service.close_all_connections())
-        loop.run_until_complete(auth.mq_service.close())
-
         main_logger.info('"Main" endpoint is stopped.')
-        sys.exit(0)
+
+    except Exception as e:
+        main_logger.error(e)
+        exit_code = 1
+
+    finally:
+        messages.loop.run_until_complete(messages.db_service.close_all_connections())
+        messages.loop.run_until_complete(messages.mq_service.close())
+        users.loop.run_until_complete(users.db_service.close_all_connections())
+        auth.loop.run_until_complete(auth.db_service.close_all_connections())
+        auth.loop.run_until_complete(auth.mq_service.close())
+
+        sys.exit(exit_code)

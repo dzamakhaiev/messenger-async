@@ -15,9 +15,13 @@ from logger.logger import Logger
 users_logger = Logger('users_endpoint')
 app = FastAPI()
 router = APIRouter(prefix=routes.USERS, tags=['users'])
+
 security = HTTPBearer()
 db_service = DBService()
 auth_service = AuthService()
+
+loop = new_event_loop()
+loop.run_until_complete(db_service.establish_db_connection())
 
 
 @router.post(path='/', status_code=status.HTTP_201_CREATED)
@@ -105,11 +109,9 @@ async def health():
 
 
 if __name__ == '__main__':
-    loop = new_event_loop()
     exit_code = 0
 
     try:
-        loop.run_until_complete(db_service.establish_db_connection())
         users_logger.info('"Users" endpoint is started.')
         run(app=app, host=settings.HOST, port=settings.PORT)
 
