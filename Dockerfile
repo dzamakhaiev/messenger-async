@@ -18,5 +18,3 @@ COPY ./services /messenger-async/services
 COPY ./utils /messenger-async/utils
 COPY ./requirements.txt /messenger-async/requirements.txt
 RUN pip3 install -r requirements.txt --break-system-packages
-
-WORKDIR /messenger-async/app
