@@ -52,7 +52,7 @@ services:
       SERVICE_NAME: users
     volumes:
       - logs-prod:/messenger-async/logs
-    command: sh -c "sleep 10 && uvicorn app.users:app --host 0.0.0.0 --port 5000 --workers 2"
+    command: sh -c "sleep 10 && uvicorn app.users:app --host 0.0.0.0 --port 5000 --workers 4"
 
   auth:
     container_name: auth
@@ -73,7 +73,7 @@ services:
       SERVICE_NAME: auth
     volumes:
       - logs-prod:/messenger-async/logs
-    command: sh -c "sleep 10 && uvicorn app.auth:app --host 0.0.0.0 --port 5000 --workers 2"
+    command: sh -c "sleep 10 && uvicorn app.auth:app --host 0.0.0.0 --port 5000 --workers 4"
 
   messages:
     container_name: messages
@@ -94,7 +94,7 @@ services:
       SERVICE_NAME: messages
     volumes:
       - logs-prod:/messenger-async/logs
-    command: sh -c "sleep 10 && uvicorn app.messages:app --host 0.0.0.0 --port 5000 --workers 2"
+    command: sh -c "sleep 10 && uvicorn app.messages:app --host 0.0.0.0 --port 5000 --workers 4"
 
   sender:
     container_name: sender
