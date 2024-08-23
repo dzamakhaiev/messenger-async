@@ -3,8 +3,10 @@ This is a async handler for RabbitMQ instance in docker container.
 """
 import json
 import asyncio
+import sys
+
 import aio_pika
-from aio_pika import Exchange, Queue, Message
+from aio_pika import Exchange, Queue, Message, AMQPException
 from databases import settings
 from logger.logger import Logger
 
@@ -23,8 +25,13 @@ class RabbitMQHandler:
 
     async def connect(self):
         mq_logger.info('Connect to RabbitMQ.')
-        self.connection = await aio_pika.connect_robust(settings.CONNECT_URI)
-        self.channel = await self.connection.channel()
+        try:
+            self.connection = await aio_pika.connect_robust(settings.CONNECT_URI)
+            self.channel = await self.connection.channel()
+
+        except AMQPException as e:
+            mq_logger.error(e)
+            sys.exit(1)
 
     async def store_exchange_and_queues(self, exchange: Exchange, msg_queue: Queue, login_queue: Queue):
         self.exchange = exchange
