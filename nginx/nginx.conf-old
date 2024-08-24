@@ -12,12 +12,6 @@ events {
 
 http {
 
-    upstream listener {
-            least_conn;
-            server listener-1:5000;
-            server listener-2:5000;
-        }
-
     include       /etc/nginx/mime.types;
     default_type  application/octet-stream;
 
@@ -33,8 +27,24 @@ http {
     listen 5000;
     server_name _;
 
-        location / {
-            proxy_pass http://listener;
+        location /api/users {
+            proxy_pass http://users:5000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+        location /api/auth {
+            proxy_pass http://auth:5000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+        location /api/messages {
+            proxy_pass http://messages:5000;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

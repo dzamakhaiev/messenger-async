@@ -32,9 +32,10 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - postgres-prod:/var/lib/postgresql/data
+    command: -c 'max_connections=500'
 
-  users:
-    container_name: users-async
+  listener-1:
+    container_name: listener-1-async
     image: "dzamakhaiev/messenger-async"
     restart: on-failure
     deploy:
@@ -52,10 +53,10 @@ services:
       SERVICE_NAME: users
     volumes:
       - logs-prod:/messenger-async/logs
-    command: sh -c "sleep 20 && uvicorn app.users:app --host 0.0.0.0 --port 5000 --workers 4"
+    command: sh -c "sleep 20 && uvicorn app.main:app --host 0.0.0.0 --port 5000 --workers 2"
 
-  auth:
-    container_name: auth-async
+  listener-2:
+    container_name: listener-2-async
     image: "dzamakhaiev/messenger-async"
     restart: on-failure
     deploy:
@@ -70,31 +71,10 @@ services:
     networks:
       - backend-async-prod
     environment:
-      SERVICE_NAME: auth
+      SERVICE_NAME: users
     volumes:
       - logs-prod:/messenger-async/logs
-    command: sh -c "sleep 20 && uvicorn app.auth:app --host 0.0.0.0 --port 5000 --workers 4"
-
-  messages:
-    container_name: messages-async
-    image: "dzamakhaiev/messenger-async"
-    restart: on-failure
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 1s
-        max_attempts: 5
-        window: 60s
-    depends_on:
-      - rabbitmq
-      - postgres
-    networks:
-      - backend-async-prod
-    environment:
-      SERVICE_NAME: messages
-    volumes:
-      - logs-prod:/messenger-async/logs
-    command: sh -c "sleep 20 && uvicorn app.messages:app --host 0.0.0.0 --port 5000 --workers 4"
+    command: sh -c "sleep 20 && uvicorn app.main:app --host 0.0.0.0 --port 5000 --workers 2"
 
   sender:
     container_name: sender-async
@@ -128,14 +108,13 @@ services:
         max_attempts: 3
         window: 60s
     depends_on:
-      - auth
-      - users
-      - messages
+      - listener-1
+      - listener-2
     ports:
       - "5005:5000"
     networks:
       - backend-async-prod
-    command: sh -c "sleep 20 && nginx -g 'daemon off;'"
+    command: sh -c "sleep 30 && nginx -g 'daemon off;'"
 
 
 networks:
