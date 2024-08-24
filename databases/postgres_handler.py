@@ -18,7 +18,6 @@ class PostgresHandler:
     async def connect(self):
         try:
             self.connections_pool = await asyncpg.create_pool(
-                min_size=20, max_size=50,
                 database=settings.DB_NAME, user=settings.DB_USER,
                 port=settings.DB_PORT, host=settings.DB_HOST,
                 password=settings.DB_PASSWORD)
