@@ -33,6 +33,7 @@ services:
       POSTGRES_MAX_CONNECTIONS: 500
     volumes:
       - postgres-prod:/var/lib/postgresql/data
+    command: postgres -N 500
 
   users:
     container_name: users-async
