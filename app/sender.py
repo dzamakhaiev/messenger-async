@@ -16,7 +16,7 @@ from services.sender_service import SenderService
 from logger.logger import Logger
 
 
-messages_logger = Logger('sender')
+sender_logger = Logger('sender')
 db_service = DBService()
 mq_service = MQService()
 sender_service = SenderService()
@@ -26,7 +26,7 @@ async def process_user_message(message: AbstractIncomingMessage):
     async with message.process():
         body = message.body.decode()
         message_json = json.loads(body)
-        messages_logger.debug(f'Processing user message: {message_json}')
+        sender_logger.debug(f'Processing user message: {message_json}')
 
         address_list = message_json.get('address_list')
         msg_json = message_json.get('msg_json')
@@ -40,7 +40,7 @@ async def process_user_login(message: AbstractIncomingMessage):
     async with message.process():
         body = message.body.decode()
         login_json = json.loads(body)
-        messages_logger.debug(f'Processing user login: {login_json}')
+        sender_logger.debug(f'Processing user login: {login_json}')
 
         user_id = login_json.get('user_id')
         user_address = login_json.get('user_address')
@@ -53,25 +53,43 @@ async def process_user_login(message: AbstractIncomingMessage):
 
 
 async def main():
+    sender_logger.info('Start async RabbitMQ consumer.')
     await db_service.establish_db_connection()
     await mq_service.establish_db_connection()
 
     await mq_service.mq_handler.msg_queue.consume(process_user_message)
     await mq_service.mq_handler.login_queue.consume(process_user_login)
 
-    try:
-        await asyncio.Future()
-    finally:
-        await mq_service.close()
-        await db_service.close_all_connections()
+    while True:
+        try:
+            sender_logger.info('Start infinite loop.')
+            await db_service.connect_to_databases()
+            await mq_service.connect()
+            await asyncio.Future()
+
+        except Exception as e:
+            sender_logger.error(e)
+
+        finally:
+            sender_logger.info('Databases connections are closed in loop.')
+            await mq_service.close()
+            await db_service.close_all_connections()
 
 
 if __name__ == '__main__':
+    exit_code = 0
 
     try:
-        messages_logger.info('Sender is starting its work.')
+        sender_logger.info('Sender is starting its work.')
         asyncio.run(main())
 
     except KeyboardInterrupt:
-        messages_logger.info('Sender is stopped.')
-        sys.exit(0)
+        sender_logger.info('Sender is stopped.')
+        sys.exit(exit_code)
+
+    except Exception as e:
+        sender_logger.error(e)
+        exit_code = 1
+
+    finally:
+        sys.exit(exit_code)

@@ -13,7 +13,6 @@ class MQService:
         self.mq_handler = RabbitMQHandler()
 
     async def connect(self):
-        service_logger.info('Connect to RabbitMQ.')
         await self.mq_handler.connect()
 
     async def prepare_database(self):
