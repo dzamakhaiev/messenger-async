@@ -67,6 +67,7 @@ async def process_message(request: Request, token: HTTPAuthorizationCredentials 
         messages_logger.info(f'Send message to "{msg.receiver_id}" user id.')
         address_list = await db_service.get_user_address(user_id=msg.receiver_id)
         await mq_service.put_to_message_queue({'address_list': address_list, 'msg_json': request_json})
+        messages_logger.debug(f'Message was published to RabbitMQ.')
         return {'details': 'Message processed.'}
 
 
