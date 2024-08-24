@@ -9,6 +9,7 @@ DB_PORT = 5432
 DB_NAME = 'postgres'
 DB_USER = 'postgres'
 DB_PASSWORD = 'postgres'
+DB_TIME_ROUND = 4
 
 MQ_HOST = 'rabbitmq' if INSIDE_DOCKER else 'localhost'
 MQ_PORT = 5672

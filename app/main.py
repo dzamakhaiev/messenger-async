@@ -1,5 +1,4 @@
 import sys
-from asyncio import new_event_loop
 from fastapi import FastAPI
 from uvicorn import run
 from app import messages

@@ -1,5 +1,4 @@
 import sys
-from asyncio import new_event_loop
 from pydantic import ValidationError
 from fastapi import FastAPI, Request, HTTPException, APIRouter, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials

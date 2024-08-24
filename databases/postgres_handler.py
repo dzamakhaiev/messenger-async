@@ -1,4 +1,5 @@
 import sys
+import time
 import typing
 import asyncio
 import asyncpg
@@ -12,10 +13,12 @@ class PostgresHandler:
 
     def __init__(self):
         self.connection = None
+        self.connections_pool = None
 
     async def connect(self):
         try:
-            self.connection = await asyncpg.connect(
+            self.connections_pool = await asyncpg.create_pool(
+                min_size=20, max_size=50,
                 database=settings.DB_NAME, user=settings.DB_USER,
                 port=settings.DB_PORT, host=settings.DB_HOST,
                 password=settings.DB_PASSWORD)
@@ -32,11 +35,24 @@ class PostgresHandler:
                               f'with args: {args}\n'
                               f'many: {many}')
 
+        # Calculate time of query execution
+        start = time.time()
+
         try:
             if many:
-                await self.connection.executemany(query, args)
+                async with self.connections_pool.acquire() as connection:
+                    async with connection.transaction():
+                        duration = round(time.time() - start, settings.DB_TIME_ROUND)
+                        postgres_logger.debug(f'Query time execution: {duration} seconds')
+                        await connection.executemany(query, args)
+
             else:
-                await self.connection.execute(query, *args)
+                async with self.connections_pool.acquire() as connection:
+                    async with connection.transaction():
+                        duration = round(time.time() - start, settings.DB_TIME_ROUND)
+                        postgres_logger.debug(f'Query time execution: {duration} seconds')
+                        await connection.execute(query, *args)
+
             postgres_logger.debug('Query executed.')
 
         except asyncpg.exceptions.UniqueViolationError as e:
@@ -50,15 +66,26 @@ class PostgresHandler:
                               f'with args: {args}\n'
                               f'fetch all: {fetch_all}')
 
+        # Calculate time of query execution
+        start = time.time()
+
         if fetch_all:
-            result = await self.connection.fetch(query, *args)
-            postgres_logger.debug('Query executed.')
-            return result
+            async with self.connections_pool.acquire() as connection:
+                async with connection.transaction():
+                    result = await connection.fetch(query, *args)
+                    duration = round(time.time() - start, settings.DB_TIME_ROUND)
+                    postgres_logger.debug(f'Query time execution: {duration} seconds')
+                    postgres_logger.debug('Query executed.')
+                    return result
 
         else:
-            result = await self.connection.fetchrow(query, *args)
-            postgres_logger.debug('Query executed.')
-            return result
+            async with self.connections_pool.acquire() as connection:
+                async with connection.transaction():
+                    result = await connection.fetchrow(query, *args)
+                    duration = round(time.time() - start, settings.DB_TIME_ROUND)
+                    postgres_logger.debug(f'Query time execution: {duration} seconds')
+                    postgres_logger.debug('Query executed.')
+                    return result
 
     async def create_users_table(self):
         await self.execute_query('''
@@ -221,6 +248,8 @@ class PostgresHandler:
     async def close(self):
         if self.connection:
             await self.connection.close()
+        if self.connections_pool:
+            await self.connections_pool.close()
 
 
 if __name__ == '__main__':
