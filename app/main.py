@@ -19,6 +19,24 @@ app.include_router(router=auth.logout_router)
 app.include_router(router=auth.auth_health_router)
 
 
+@app.on_event('startup')
+async def prepare_databases():
+    await messages.db_service.establish_db_connection()
+    await messages.mq_service.establish_db_connection()
+    await users.db_service.establish_db_connection()
+    await auth.db_service.establish_db_connection()
+    await auth.mq_service.establish_db_connection()
+
+
+@app.on_event('shutdown')
+async def shutdown_db():
+    await messages.db_service.close_all_connections()
+    await messages.mq_service.close()
+    await users.db_service.close_all_connections()
+    await auth.db_service.close_all_connections()
+    await auth.mq_service.close()
+
+
 if __name__ == '__main__':
     exit_code = 0
 
@@ -34,10 +52,4 @@ if __name__ == '__main__':
         exit_code = 1
 
     finally:
-        messages.loop.run_until_complete(messages.db_service.close_all_connections())
-        messages.loop.run_until_complete(messages.mq_service.close())
-        users.loop.run_until_complete(users.db_service.close_all_connections())
-        auth.loop.run_until_complete(auth.db_service.close_all_connections())
-        auth.loop.run_until_complete(auth.mq_service.close())
-
         sys.exit(exit_code)

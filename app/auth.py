@@ -26,17 +26,23 @@ db_service = DBService()
 mq_service = MQService()
 auth_service = AuthService()
 
-loop = new_event_loop()
-loop.run_until_complete(db_service.establish_db_connection())
-loop.run_until_complete(mq_service.establish_db_connection())
+
+@app.on_event('startup')
+async def prepare_databases():
+    await db_service.establish_db_connection()
+    await mq_service.establish_db_connection()
+
+
+@app.on_event('shutdown')
+async def shutdown_db():
+    await db_service.close_all_connections()
+    await mq_service.close()
 
 
 @login_router.post(path='/', status_code=status.HTTP_200_OK)
 @app.post(path=routes.LOGIN, status_code=status.HTTP_200_OK)
 async def login(request: Request):
     auth_logger.info('User log in.')
-    await db_service.connect_to_databases()
-    await mq_service.connect()
 
     try:
         request_json = await request.json()
@@ -84,7 +90,6 @@ async def login(request: Request):
 async def logout(request: Request, token: HTTPAuthorizationCredentials = Depends(security)):
     auth_logger.info('User log out.')
     user_id, token_username, _ = auth_service.check_token(token.credentials)
-    await db_service.connect_to_databases()
 
     try:
         request_json = await request.json()
@@ -128,6 +133,4 @@ if __name__ == '__main__':
         exit_code = 1
 
     finally:
-        loop.run_until_complete(db_service.close_all_connections())
-        loop.run_until_complete(mq_service.close())
         sys.exit(exit_code)
