@@ -14,7 +14,7 @@ from logger.logger import Logger
 
 messages_logger = Logger('messages_endpoint')
 app = FastAPI()
-router = APIRouter(prefix=routes.MESSAGES, tags=['messages'])
+router = APIRouter(tags=['messages'])
 security = HTTPBearer()
 
 db_service = DBService()
@@ -34,7 +34,7 @@ async def shutdown_db():
     await mq_service.close()
 
 
-@router.post(path='/', status_code=status.HTTP_200_OK)
+@router.post(path=routes.MESSAGES, status_code=status.HTTP_200_OK)
 @app.post(path=routes.MESSAGES, status_code=status.HTTP_200_OK)
 async def process_message(request: Request, token: HTTPAuthorizationCredentials = Depends(security)):
     messages_logger.info('Process message.')

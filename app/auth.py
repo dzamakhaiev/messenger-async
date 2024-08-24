@@ -11,15 +11,13 @@ from services.mq_service import MQService
 from services.auth_service import AuthService
 from logger.logger import Logger
 
-
 auth_logger = Logger('auth_endpoint')
 app = FastAPI()
 security = HTTPBearer()
 
-login_router = APIRouter(prefix=routes.LOGIN, tags=['auth'])
-logout_router = APIRouter(prefix=routes.LOGOUT, tags=['auth'])
-auth_health_router = APIRouter(prefix=routes.AUTH_HEALTH, tags=['auth'])
-
+login_router = APIRouter(tags=['auth'])
+logout_router = APIRouter(tags=['auth'])
+auth_health_router = APIRouter(tags=['auth'])
 
 db_service = DBService()
 mq_service = MQService()
@@ -38,7 +36,7 @@ async def shutdown_db():
     await mq_service.close()
 
 
-@login_router.post(path='/', status_code=status.HTTP_200_OK)
+@login_router.post(path=routes.LOGIN, status_code=status.HTTP_200_OK)
 @app.post(path=routes.LOGIN, status_code=status.HTTP_200_OK)
 async def login(request: Request):
     auth_logger.info('User log in.')
@@ -84,7 +82,7 @@ async def login(request: Request):
                             detail=settings.INCORRECT_CREDS)
 
 
-@logout_router.post(path='/', status_code=status.HTTP_200_OK)
+@logout_router.post(path=routes.LOGOUT, status_code=status.HTTP_200_OK)
 @app.post(path=routes.LOGOUT, status_code=status.HTTP_200_OK)
 async def logout(request: Request, token: HTTPAuthorizationCredentials = Depends(security)):
     auth_logger.info('User log out.')
@@ -111,7 +109,7 @@ async def logout(request: Request, token: HTTPAuthorizationCredentials = Depends
                             detail=settings.VALIDATION_ERROR)
 
 
-@auth_health_router.head(path='/', status_code=status.HTTP_200_OK)
+@auth_health_router.head(path=routes.AUTH_HEALTH, status_code=status.HTTP_200_OK)
 @app.head(path=routes.AUTH_HEALTH, status_code=status.HTTP_200_OK)
 async def health():
     return

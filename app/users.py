@@ -13,7 +13,7 @@ from logger.logger import Logger
 
 users_logger = Logger('users_endpoint')
 app = FastAPI()
-router = APIRouter(prefix=routes.USERS, tags=['users'])
+router = APIRouter(tags=['users'])
 
 security = HTTPBearer()
 db_service = DBService()
@@ -30,7 +30,7 @@ async def shutdown_db():
     await db_service.close_all_connections()
 
 
-@router.post(path='/', status_code=status.HTTP_201_CREATED)
+@router.post(path=routes.USERS, status_code=status.HTTP_201_CREATED)
 @app.post(path=routes.USERS, status_code=status.HTTP_201_CREATED)
 async def create_user(request: Request):
     users_logger.info('Create user.')
@@ -58,7 +58,7 @@ async def create_user(request: Request):
     return {'user_id': user_id}
 
 
-@router.get(path='/', status_code=status.HTTP_200_OK)
+@router.get(path=routes.USERS, status_code=status.HTTP_200_OK)
 @app.get(path=routes.USERS, status_code=status.HTTP_200_OK)
 async def get_user(request: Request, token: HTTPAuthorizationCredentials = Depends(security)):
     users_logger.info('Get user.')
@@ -81,13 +81,13 @@ async def get_user(request: Request, token: HTTPAuthorizationCredentials = Depen
                             detail=settings.VALIDATION_ERROR)
 
 
-@router.put(path='/', status_code=status.HTTP_200_OK)
+@router.put(path=routes.USERS, status_code=status.HTTP_200_OK)
 @app.put(path=routes.USERS, status_code=status.HTTP_200_OK)
 async def update_user():
     return {}
 
 
-@router.delete(path='/', status_code=status.HTTP_200_OK)
+@router.delete(path=routes.USERS, status_code=status.HTTP_200_OK)
 @app.delete(path=routes.USERS, status_code=status.HTTP_200_OK)
 async def delete_user(request: Request):
     users_logger.info('Delete user.')
@@ -105,7 +105,7 @@ async def delete_user(request: Request):
                             detail=settings.VALIDATION_ERROR)
 
 
-@router.head(path='/', status_code=status.HTTP_200_OK)
+@router.head(path=routes.USERS_HEALTH, status_code=status.HTTP_200_OK)
 @app.head(path=routes.USERS_HEALTH, status_code=status.HTTP_200_OK)
 async def health():
     return
