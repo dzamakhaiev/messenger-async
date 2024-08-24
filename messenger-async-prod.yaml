@@ -30,6 +30,7 @@ services:
       - backend-async-prod
     environment:
       POSTGRES_PASSWORD: postgres
+      POSTGRES_MAX_CONNECTIONS: 500
     volumes:
       - postgres-prod:/var/lib/postgresql/data
 
